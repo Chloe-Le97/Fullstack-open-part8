@@ -5,8 +5,9 @@ const schema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
-    minlength: 3
-  }
+    minlength: 3,
+  },
+  favoriteGenre:String
 })
 
 module.exports = mongoose.model('User', schema)

@@ -20,21 +20,20 @@ const NewBook = (props) => {
 
   const submit = async (event) => {
     event.preventDefault()
-    
-    const sentGenres = JSON.stringify(genres)
-
+  
     const published = Number(publishedYear)
     
-    await createBook({variables:{title,author,published,genres:sentGenres}})
+    await createBook({variables:{title,author,published,genres:genres}})
     setTitle('')
     setPublishedYear('')
     setAuhtor('')
     setGenres([])
     setGenre('')
+    props.setPage('books')
   }
 
   const addGenre = () => {
-    setGenres(genres.concat(genre))
+    setGenres(genres.concat(genre.toString()))
     setGenre('')
   }
 
@@ -72,7 +71,7 @@ const NewBook = (props) => {
           <button onClick={addGenre} type="button">add genre</button>
         </div>
         <div>
-          genres: {genres.join(' ')}
+          genres: {genres.join(', ')}
         </div>
         <button type='submit'>create book</button>
       </form>

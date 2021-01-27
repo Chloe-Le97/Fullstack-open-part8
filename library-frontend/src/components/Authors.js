@@ -16,7 +16,11 @@ const Authors = (props) => {
   const [name, setName] = useState('');
   const [year, setYear] = useState('')
 
-  const authors = useQuery(ALL_AUTHORS)
+  const authors = useQuery(ALL_AUTHORS,{
+    onError: (error) => {
+      props.setError(error.graphQLErrors[0].message)
+    }
+  })
 
   const [editAuthor] = useMutation(EDIT_AUTHOR,{
     refetchQueries: [{query: ALL_AUTHORS } ]
@@ -66,7 +70,8 @@ const Authors = (props) => {
           )}
         </tbody>
       </table>
-      <h2>Set birthyear for author</h2>
+      {props.token?(<div>      
+        <h2>Set birthyear for author</h2>
       <form onSubmit={setBirthYear}>
             <Select styles={customStyles} onChange={setName} options={authorName}/>
             <div>
@@ -75,6 +80,8 @@ const Authors = (props) => {
             </div>
             <button type='submit'>Send</button>
       </form>
+      </div>):(null)}
+
     </div>
   )
 }

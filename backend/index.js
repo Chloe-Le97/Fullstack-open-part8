@@ -141,7 +141,7 @@ const resolvers = {
     login: async (root, args) => {
       const user = await User.findOne({ username: args.username })
   
-      if ( !user || args.password !== 'secred' ) {
+      if ( !user || args.password !== '123456' ) {
         throw new UserInputError("wrong credentials")
       }
   
@@ -153,7 +153,7 @@ const resolvers = {
       return { value: jwt.sign(userForToken, JWT_SECRET) }
     },
     createUser: (root, args) => {
-      const user = new User({ username: args.username })
+      const user = new User({ username: args.username, favoriteGenre: args.favoriteGenre })
   
       return user.save()
         .catch(error => {
