@@ -1,19 +1,27 @@
 import React, { useState,useEffect } from 'react'
-import { gql, useMutation } from '@apollo/client'
+import { gql, useMutation,useQuery } from '@apollo/client'
 
 import {CREATE_BOOK,ALL_BOOKS,ALL_AUTHORS} from '../queries/queries'
 
 const NewBook = (props) => {
   const [title, setTitle] = useState('')
-  const [author, setAuhtor] = useState('')
+  const [author, setAuthor] = useState('')
   const [publishedYear, setPublishedYear] = useState('')
   const [genre, setGenre] = useState('')
   const [genres, setGenres] = useState([])
 
-  const [createBook] = useMutation(CREATE_BOOK, {
-    refetchQueries: [ { query: ALL_BOOKS},{query: ALL_AUTHORS } ]
-  })
 
+  const [addNewBook] = useMutation(CREATE_BOOK, {
+    refetchQueries: [{ query: ALL_BOOKS }, { query: ALL_AUTHORS }],
+    awaitRefetchQueries:true,
+    onError: (error) => {
+      props.setError(error)
+    },
+    // update: (store, response) => {
+    //   props.updateCacheWith(response.data.addBook)
+    // }
+  })
+  
   if (!props.show) {
     return null
   }
@@ -23,13 +31,14 @@ const NewBook = (props) => {
   
     const published = Number(publishedYear)
     
-    await createBook({variables:{title,author,published,genres:genres}})
+    await addNewBook({variables:{title,author,published,genres:genres}})
+    
+    props.setPage('books')
     setTitle('')
     setPublishedYear('')
-    setAuhtor('')
+    setAuthor('')
     setGenres([])
     setGenre('')
-    props.setPage('books')
   }
 
   const addGenre = () => {
@@ -52,7 +61,7 @@ const NewBook = (props) => {
           author
           <input
             value={author}
-            onChange={({ target }) => setAuhtor(target.value)}
+            onChange={({ target }) => setAuthor(target.value)}
           />
         </div>
         <div>

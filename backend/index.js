@@ -73,21 +73,54 @@ const typeDefs = gql`
       }
     
     type Query {
-        allBooks(author:String,genre:String): [Book!]
+        allBooks(author:String,genres:String): [Book!]
         bookCount: Int!
         authorCount: Int!
         allAuthors: [Author!]
         me: User
     }
+
+    type Subscription {
+      bookAdded: Book!
+    }    
 `
+const { PubSub } = require('apollo-server')
+const pubsub = new PubSub()
 
 const resolvers = {
   Query: {
     bookCount: () => Book.collection.countDocuments(),
     authorCount: () => Author.collection.countDocuments(),
     allBooks: async (roots,args) => {
-      const all = await Book.find({}).populate("author")
+      let all;
+      let author;
+
+      if(args.author&&args.genres){
+        author = await Author.findOne({'name':args.author})
+        return Book.find()
+        .where({
+          author: author ? author._id : null,
+          genres: { $in: [args.genres] },
+        })
+        .populate("author")
+      }
+
+      if(args.author){
+        author = await Author.findOne({'name':args.author})
+        return Book.find()
+          .where({ author: author ? author._id : null })
+          .populate("author");
+      }
+
+      if(args.genres){
+        return await Book.find().where({ genres: { $in: [args.genres] } }).populate("author")
+      }
+
+
+
+      all = await Book.find({}).populate("author")
       return all
+      
     },
     allAuthors: () => {
       return Author.find({})
@@ -121,6 +154,7 @@ const resolvers = {
           })
         }
         const savedBook = await book.populate("author").execPopulate();
+        pubsub.publish('BOOK_ADDED', { bookAdded: savedBook })
         return savedBook
     },
     editAuthor: async (root,args,{currentUser}) =>{
@@ -162,7 +196,12 @@ const resolvers = {
           })
         })
     },
-  }
+  },
+  Subscription: {
+    bookAdded: {
+      subscribe: () => pubsub.asyncIterator(['BOOK_ADDED'])
+    },
+  },
 }
 
 const server = new ApolloServer({
@@ -181,6 +220,7 @@ const server = new ApolloServer({
   }
 })
 
-server.listen().then(({ url }) => {
+server.listen().then(({ url, subscriptionsUrl }) => {
   console.log(`Server ready at ${url}`)
+  console.log(`Subscriptions ready at ${subscriptionsUrl}`)
 })

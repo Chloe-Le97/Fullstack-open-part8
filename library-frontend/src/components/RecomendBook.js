@@ -39,7 +39,7 @@ const RecomendBooks = (props) => {
         <tbody>
           <tr>
             <th></th>
-            <th>
+            <th> 
               author
             </th>
             <th>
