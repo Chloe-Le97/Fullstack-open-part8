@@ -36,6 +36,7 @@ const typeDefs = gql`
       name: String!
       born: Int
       id: ID!
+      bookCount: Int
     },
 
     type User {
@@ -85,6 +86,7 @@ const typeDefs = gql`
     }    
 `
 const { PubSub } = require('apollo-server')
+const author = require('./models/author')
 const pubsub = new PubSub()
 
 const resolvers = {
@@ -116,14 +118,12 @@ const resolvers = {
         return await Book.find().where({ genres: { $in: [args.genres] } }).populate("author")
       }
 
-
-
       all = await Book.find({}).populate("author")
       return all
       
     },
     allAuthors: () => {
-      return Author.find({})
+      return Author.find({});
     },
     me: (root, args, context) => {
       return context.currentUser
